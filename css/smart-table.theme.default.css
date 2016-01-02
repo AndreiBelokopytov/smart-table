@@ -1,0 +1,56 @@
+table.smart-table {
+  white-space: nowrap;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.smart-table .table-cell, .smart-table th, .smart-table td {
+  padding: 20px 8px;
+  text-align: center;
+}
+
+.smart-table th {
+  border: 0;
+  color: #fff;
+  text-transform: uppercase;
+}
+
+.smart-table td {
+  border-bottom: 1px solid #e4e4e4;
+}
+
+.smart-table img {
+  border-radius: 50%;
+}
+
+.smart-table thead {
+  background-color: #74CA9A;
+}
+
+.smart-table tbody {
+  background-color: #f9f9f9;
+}
+
+.smart-table .filter {
+  border: 1px solid #e4e4e4;
+  padding: 8px;
+  border-radius: 4px;
+  max-width: 220px;
+}
+
+.smart-table .filter.range-filter {
+  max-width: 70px;
+  display: inline-block;
+}
+
+.smart-table .filter.range-filter:first-child {
+  margin-right: 8px;
+}
+
+.smart-table select.filter {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 100%;
+}
+
+/*# sourceMappingURL=smart-table.theme.default.css.map */

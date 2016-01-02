@@ -1,0 +1,9 @@
+{
+	"version": 3,
+	"file": "smart-table.css",
+	"sources": [
+		"../sass/smart-table.sass"
+	],
+	"mappings": "AAAA,KAAK,AAAA,YAAY,CAAC;EAChB,KAAK,EAAE,IAAK;EACZ,YAAY,EAAE,KAAM;CAAG;;AAEzB,wBAAwB,CAEtB,OAAO,CAAC;EACN,MAAM,EAAE,OAAQ;CAAG",
+	"names": []
+}

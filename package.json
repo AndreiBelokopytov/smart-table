@@ -1,0 +1,14 @@
+{
+  "name": "smart-table",
+  "version": "0.1.0",
+  "description": "Javascript powered dynamic html table with filtering, sorting and other opportunities",
+  "main": "smart-table.js",
+  "author": "Andrei Belokopytov <avbelokopytov@yahoo.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-contrib-watch": "^0.6.1",
+    "grunt-sass": "^1.1.0",
+    "load-grunt-tasks": "^3.4.0"
+  }
+}

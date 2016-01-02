@@ -1,0 +1,60 @@
+$table-fontsize: 12px
+$thead-background: #74CA9A
+$tbody-background: #f9f9f9
+
+$th-color: #fff
+$th-border-width: 0
+
+$td-border-width: 1px
+$td-border-color: #e4e4e4
+
+
+table.smart-table   
+  white-space: nowrap
+  border-collapse: collapse
+  font-size: $table-fontsize
+
+.smart-table
+  
+  .table-cell
+    padding: 20px 8px
+    text-align: center
+  
+  
+  th
+    @extend .table-cell
+    border: $th-border-width
+    color: $th-color
+    text-transform: uppercase
+  
+  td
+    @extend .table-cell
+    border-bottom: $td-border-width solid $td-border-color
+    
+  img
+    border-radius: 50%
+        
+  thead
+    background-color: $thead-background
+
+  tbody
+    background-color: $tbody-background
+    
+  .filter
+    border: 1px solid #e4e4e4
+    padding: 8px
+    border-radius: 4px
+    max-width: 220px
+    
+  .filter.range-filter
+    max-width: 70px
+    display: inline-block
+    
+  .filter.range-filter:first-child
+    margin-right: 8px
+
+  select.filter
+    -webkit-appearance: none
+    -moz-appearance: none
+    width: 100%  
+

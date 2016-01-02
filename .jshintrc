@@ -1,0 +1,20 @@
+{
+  "bitwise": true,
+  "curly": true,
+  "eqeqeq": true,
+  "forin": true,
+  "nonbsp": true,
+  "singleGroups": true,
+  "strict": "func",
+  "undef": true,
+  "unused": true,
+  "browser": true,
+  "node": true,
+  "globals": {
+    //global object
+    "SmartTable": true,
+    //libraries
+    "$": true,
+    "moment": true
+  }
+}
