@@ -2,7 +2,29 @@ body {
   font-family: Helvetica, Arial, sans-serif;
 }
 
-.table-wrap {
+.container {
   width: 1200px;
   margin: 25px auto;
+}
+
+.columns {
+  margin-bottom: 15px;
+}
+
+.columns ul {
+  margin: 0;
+  padding: 0;
+}
+
+.columns li {
+  display: inline-block;
+  margin-right: 12px;
+}
+
+.columns li:last-child {
+  margin-right: 0;
+}
+
+.columns li>label {
+  cursor: pointer;
 }
