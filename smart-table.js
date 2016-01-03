@@ -585,23 +585,21 @@
       rowElem,
       colElem,
       colVal,
-      colIndex,
       columnAttributes = {},
       tableRows = document.createDocumentFragment();
 
     if (Array.isArray(data)) {
-      data.forEach(function (item, index) {
+      data.forEach(function (item, rowIndex) {
         rowElem = createDomElem('tr', '', {
-          'grid-rowindex': index
+          'grid-rowindex': rowIndex
         });
 
-        columns.forEach(function (column, index) {
-          colIndex = index + 1;
-          columnAttributes['data-colindex'] = colIndex;
+        columns.forEach(function (column, colIndex) {
+          columnAttributes['data-colindex'] = colIndex + 1;
           colElem = createDomElem('td', '', columnAttributes);
           
           if (column.isIndex) {
-            colElem.innerText = index + 1;
+            colElem.innerText = rowIndex + 1;
           } else {
             colVal = item[column.property];
 
