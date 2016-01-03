@@ -214,7 +214,37 @@
           this.tbodyElem.removeChild(el);
         }
       }
+      this._setColumns(tableContent);
       this.tbodyElem.appendChild(tableContent);
+    };
+    
+    this._setColumns = function (elem) {
+      var
+        colIndex,
+        display,
+        setColumnVisibility = function (displayStyle, colIndex) {
+          var 
+            colElements;
+            
+          colElements = elem.querySelectorAll(
+            'col[data-colindex="' + colIndex + '"], ' +
+            'th[data-colindex="' + colIndex + '"], ' + 
+            'td[data-colindex="' + colIndex + '"]');
+            
+          [].forEach.call(colElements, function (elem) {
+            elem.style.display = displayStyle;
+          });
+        };
+        
+        this.columns.forEach(function (column, index) {
+          colIndex = index + 1;
+          if (column.hidden) {
+            display = 'none';
+          } else {
+            display = '';
+          }
+          setColumnVisibility(display, colIndex);
+        }, this);
     };
 
     (function initGrid() {
@@ -222,6 +252,7 @@
         th,
         col,
         colWidth,
+        colIndex,
         filter,
         columnClass = '',
         columnAttributes = {},
@@ -288,22 +319,26 @@
       this.headersBar = createDomElem('tr', HEADERS_BAR_CSS);
       this.filtersBar = createDomElem('tr', FILTERS_BAR_CSS);
 
-      this.columns.forEach(function (column) {
+      this.columns.forEach(function (column, index) {
+        colIndex = index + 1;
+        
         if (!column.noSort) {
           columnClass = COLUMN_SORTED;
         }
+        
+        columnAttributes['data-colindex'] = colIndex;
 
         th = createDomElem('th', columnClass, columnAttributes, column.title);
         self.headersBar.appendChild(th);
 
-        th = createDomElem('th', '', {});
+        th = createDomElem('th', '', columnAttributes);
         if (self._columnsFilters[column.property]) {
           filter = self._columnsFilters[column.property];
           th.appendChild(filter.getFilterElement());
         }
         self.filtersBar.appendChild(th);
 
-        col = createDomElem('col');
+        col = createDomElem('col', '', columnAttributes);
         if (column.width) {
           colWidth = parseInt(column.width, 10);
           if (isNaN(colWidth)) {
@@ -434,6 +469,29 @@
 
       self._render();
     },
+    toggleColumns: function (colIndexes) {
+      var 
+        self = this,
+        column;
+        
+      if (!Array.isArray(colIndexes)) {
+        colIndexes = [colIndexes];
+      }  
+        
+      colIndexes.forEach(function (colIndex) {
+        column = self.columns[colIndex - 1];
+        if (column) {
+          if (typeof column.hidden === 'undefined' || 
+            column.hidden === false) {
+            column.hidden = true;
+          } else {
+            column.hidden = false;
+          }
+        }
+      });
+      
+      this._setColumns(this.tableElem);
+    },
     toggleFilters: function () {
       if (this.filtersBar.style.display !== 'none') {
         this.filtersBar.style.display = 'none';
@@ -527,6 +585,8 @@
       rowElem,
       colElem,
       colVal,
+      colIndex,
+      columnAttributes = {},
       tableRows = document.createDocumentFragment();
 
     if (Array.isArray(data)) {
@@ -535,8 +595,10 @@
           'grid-rowindex': index
         });
 
-        columns.forEach(function (column) {
-          colElem = createDomElem('td');
+        columns.forEach(function (column, index) {
+          colIndex = index + 1;
+          columnAttributes['data-colindex'] = colIndex;
+          colElem = createDomElem('td', '', columnAttributes);
           
           if (column.isIndex) {
             colElem.innerText = index + 1;
