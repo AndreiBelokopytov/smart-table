@@ -9,6 +9,8 @@
     FILTER_RANGE_CSS_CLASS = 'range-filter',
     FILTER_RANGE_MIN_CSS_CLASS = 'range-min',
     FILTER_RANGE_MAX_CSS_CLASS = 'range-max',
+    
+    NO_DATA_CSS_CLASS = 'no-data',
 
     COLUMN_TYPE_TEXT = 'text',
     COLUMN_TYPE_RANGE = 'range',
@@ -218,18 +220,18 @@
       this.tbodyElem.appendChild(tableContent);
     };
     
-    this._setColumns = function (elem) {
+    this._setColumns = function () {
       var
+        self = this,
         colIndex,
         display,
         setColumnVisibility = function (displayStyle, colIndex) {
           var 
             colElements;
             
-          colElements = elem.querySelectorAll(
+          colElements = self.tableElem.querySelectorAll(
             'col[data-colindex="' + colIndex + '"], ' +
-            'th[data-colindex="' + colIndex + '"], ' + 
-            'td[data-colindex="' + colIndex + '"]');
+            'th[data-colindex="' + colIndex + '"]');
             
           [].forEach.call(colElements, function (elem) {
             elem.style.display = displayStyle;
@@ -490,7 +492,7 @@
         }
       });
       
-      this._setColumns(this.tableElem);
+      this._render();
     },
     toggleFilters: function () {
       if (this.filtersBar.style.display !== 'none') {
@@ -586,37 +588,54 @@
       colElem,
       colVal,
       columnAttributes = {},
+      visibleColumns,
       tableRows = document.createDocumentFragment();
 
     if (Array.isArray(data)) {
-      data.forEach(function (item, rowIndex) {
-        rowElem = createDomElem('tr', '', {
-          'grid-rowindex': rowIndex
-        });
+      if (data.length) {
+        data.forEach(function (item, rowIndex) {
+          rowElem = createDomElem('tr', '', {
+            'grid-rowindex': rowIndex
+          });
 
-        columns.forEach(function (column, colIndex) {
-          columnAttributes['data-colindex'] = colIndex + 1;
-          colElem = createDomElem('td', '', columnAttributes);
-          
-          if (column.isIndex) {
-            colElem.innerText = rowIndex + 1;
-          } else {
-            colVal = item[column.property];
+          columns.forEach(function (column, colIndex) {
+            if (!column.hidden) {
+              columnAttributes['data-colindex'] = colIndex + 1;
+              colElem = createDomElem('td', '', columnAttributes);
 
-            if (colVal) {
-              if (typeof column.formatter === 'function') {
-                colElem.innerHTML = column.formatter(colVal);
+              if (column.isIndex) {
+                colElem.innerText = rowIndex + 1;
               } else {
-                colElem.innerText = colVal;
+                colVal = item[column.property];
+
+                if (colVal) {
+                  if (typeof column.formatter === 'function') {
+                    colElem.innerHTML = column.formatter(colVal);
+                  } else {
+                    colElem.innerText = colVal;
+                  }
+                }
               }
+              
+              rowElem.appendChild(colElem);
             }
-          }
+          });
 
-          rowElem.appendChild(colElem);
+          tableRows.appendChild(rowElem);
         });
-
+      } else {
+        visibleColumns = columns.filter(function (item) {
+          return !item.hidden;
+        });
+        rowElem = createDomElem('tr', NO_DATA_CSS_CLASS, {
+          'grid-rowindex': 1
+        });
+        colElem = createDomElem('td', NO_DATA_CSS_CLASS, {
+          colspan: visibleColumns.length
+        }, 'No data');
+        rowElem.appendChild(colElem);
         tableRows.appendChild(rowElem);
-      });
+      }
     }
 
     return tableRows;
