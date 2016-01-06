@@ -9,7 +9,7 @@
     FILTER_RANGE_CSS_CLASS = 'range-filter',
     FILTER_RANGE_MIN_CSS_CLASS = 'range-min',
     FILTER_RANGE_MAX_CSS_CLASS = 'range-max',
-    
+
     NO_DATA_CSS_CLASS = 'no-data',
 
     COLUMN_TYPE_TEXT = 'text',
@@ -70,7 +70,7 @@
 
 
 
-  function TextFilter(column) { 
+  function TextFilter(column) {
     TextFilter.super.apply(this, arguments);
 
     this.getFilterElement = function () {
@@ -147,13 +147,13 @@
 
       for (; index < selectOptionsLen; index++) {
         optionData = column.selectOptions[index];
-        optionElem = createDomElem('option', this.cssClass, 
+        optionElem = createDomElem('option', this.cssClass,
           {
             value: optionData.value
           }, optionData.text);
         selectElem.appendChild(optionElem);
       }
-      
+
       return selectElem;
     };
   }
@@ -219,25 +219,25 @@
       this._setColumns(tableContent);
       this.tbodyElem.appendChild(tableContent);
     };
-    
+
     this._setColumns = function () {
       var
         self = this,
         colIndex,
         display,
         setColumnVisibility = function (displayStyle, colIndex) {
-          var 
+          var
             colElements;
-            
+
           colElements = self.tableElem.querySelectorAll(
             'col[data-colindex="' + colIndex + '"], ' +
             'th[data-colindex="' + colIndex + '"]');
-            
+
           [].forEach.call(colElements, function (elem) {
             elem.style.display = displayStyle;
           });
         };
-        
+
         this.columns.forEach(function (column, index) {
           colIndex = index + 1;
           if (column.hidden) {
@@ -323,11 +323,11 @@
 
       this.columns.forEach(function (column, index) {
         colIndex = index + 1;
-        
+
         if (!column.noSort) {
           columnClass = COLUMN_SORTED;
         }
-        
+
         columnAttributes['data-colindex'] = colIndex;
 
         th = createDomElem('th', columnClass, columnAttributes, column.title);
@@ -472,18 +472,18 @@
       self._render();
     },
     toggleColumns: function (colIndexes) {
-      var 
+      var
         self = this,
         column;
-        
+
       if (!Array.isArray(colIndexes)) {
         colIndexes = [colIndexes];
-      }  
-        
+      }
+
       colIndexes.forEach(function (colIndex) {
         column = self.columns[colIndex - 1];
         if (column) {
-          if (typeof column.hidden === 'undefined' || 
+          if (typeof column.hidden === 'undefined' ||
             column.hidden === false) {
             column.hidden = true;
           } else {
@@ -491,7 +491,7 @@
           }
         }
       });
-      
+
       this._render();
     },
     toggleFilters: function () {
@@ -616,7 +616,7 @@
                   }
                 }
               }
-              
+
               rowElem.appendChild(colElem);
             }
           });
@@ -656,14 +656,14 @@ if (!Element.prototype.closest) {
     'use strict';
 
     var parent = this.parentElement,
-        matchesSelector = Element.prototype.matches || 
+        matchesSelector = Element.prototype.matches ||
           Element.prototype.msMatchesSelector;
-        
+
     while (parent) {
       if (matchesSelector.call(parent, selector)) {
         return parent;
       }
-      parent = parent.parentElement;  
+      parent = parent.parentElement;
     }
 
     return parent.closest(selector);

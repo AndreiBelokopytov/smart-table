@@ -101,7 +101,7 @@
       $checkbox,
       $label,
       $li;
-      
+
     columns.forEach(function (col, index) {
       colIndex = index + 1;
       $li = $('<li/>');
@@ -113,7 +113,7 @@
       $li.append($label.append($checkbox).append(col.title));
       $ul.append($li);
     });
-    
+
     $columnsContainer.on('click', 'input[type="checkbox"]', function () {
       smartTable.toggleColumns($(this).val());
     });
@@ -138,7 +138,7 @@
       this.dispatchEvent(event);
     }
   });
-  
+
   renderColumns();
 
 })();
