@@ -21,7 +21,7 @@
     COLUMN_SORT_DESC = 'sort-desc';
 
 
-  ///TODO: add closest polyfill
+
 
   function Filter(column) {
     this.cssClass = FILTER_CSS_CLASS;
@@ -646,3 +646,26 @@
 
   root.SmartTable = SmartTable;
 })(this);
+
+
+
+
+//polyfill for Element.closest
+if (!Element.prototype.closest) {
+  Element.prototype.closest = function (selector) {
+    'use strict';
+
+    var parent = this.parentElement,
+        matchesSelector = Element.prototype.matches || 
+          Element.prototype.msMatchesSelector;
+        
+    while (parent) {
+      if (matchesSelector.call(parent, selector)) {
+        return parent;
+      }
+      parent = parent.parentElement;  
+    }
+
+    return parent.closest(selector);
+  };
+}
