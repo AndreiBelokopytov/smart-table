@@ -204,6 +204,30 @@
       this.getTableData = options.actions.getData;
     }
 
+    this._getColumnValue = function (rowData, column) {
+      var
+        val = rowData,
+        propertyPath;
+
+      if (typeof column.property === 'string') {
+        propertyPath = column.property.split('.');
+      } else {
+        throw Error('Column property should be a sting');
+      }
+
+      if (propertyPath.length) {
+        propertyPath.forEach(function (pathPart) {
+          if (val && val[pathPart] !== undefined &&
+          val[pathPart] !== null) {
+            val = val[pathPart];
+          } else {
+            val = null;
+          }
+        });
+      }
+      return val;
+    };
+
     this._render = function () {
       var
         el,
@@ -218,6 +242,21 @@
       }
       this._setColumns(tableContent);
       this.tbodyElem.appendChild(tableContent);
+    };
+
+    this._clearFilters = function () {
+      var filterFields = this.theadElem.querySelectorAll('input, select');
+      Array.prototype.forEach.call(filterFields, function (field) {
+        field.value = '';
+      });
+    };
+
+    this._clearSort = function () {
+      var colHeaders = this.theadElem.querySelectorAll('th');
+      Array.prototype.forEach.call(colHeaders, function (th) {
+        th.classList.remove(COLUMN_SORT_ASC);
+        th.classList.remove(COLUMN_SORT_DESC);
+      });
     };
 
     this._setColumns = function () {
@@ -247,6 +286,34 @@
           }
           setColumnVisibility(display, colIndex);
         }, this);
+    };
+
+    this.refresh = function () {
+      var self = this;
+
+      this._dataset = [];
+      this._filtered = [];
+      this._clearFilters();
+      this._clearSort();
+
+      this.getTableData(function (data) {
+        var
+          colVal,
+          mappedItem;
+
+        data.forEach(function (item) {
+          mappedItem = {};
+          self.columns.forEach(function (column) {
+            if (column.property) {
+              colVal = self._getColumnValue(item, column);
+              mappedItem[column.property] = colVal;
+            }
+          });
+          self._dataset.push(mappedItem);
+        });
+        self._filtered = self._dataset;
+        self._render();
+      });
     };
 
     (function initGrid() {
@@ -401,51 +468,6 @@
       });
 
       this._render();
-    },
-    refresh: function () {
-      var self = this,
-        getColProperty = function (rowData, column) {
-          var
-            val = rowData,
-            propertyPath;
-
-          if (typeof column.property === 'string') {
-            propertyPath = column.property.split('.');
-          } else {
-            return null;
-          }
-
-          if (propertyPath.length) {
-            propertyPath.forEach(function (pathPart) {
-              if (val && val[pathPart] !== undefined &&
-              val[pathPart] !== null) {
-                val = val[pathPart];
-              } else {
-                val = null;
-              }
-            });
-          }
-          return val;
-        };
-
-      this.getTableData(function (data) {
-        var
-          colVal,
-          mappedItem;
-
-        data.forEach(function (item) {
-          mappedItem = {};
-          self.columns.forEach(function (column) {
-            if (column.property) {
-              colVal = getColProperty(item, column);
-              mappedItem[column.property] = colVal;
-            }
-          });
-          self._dataset.push(mappedItem);
-        });
-        self._filtered = self._dataset;
-        self._render();
-      });
     },
     sort: function (column, order) {
       var
