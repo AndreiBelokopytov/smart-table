@@ -7,8 +7,8 @@ body {
   margin: 25px auto;
 }
 
-.columns {
-  margin-bottom: 15px;
+.columns, .controls {
+  margin-bottom: 25px;
 }
 
 .columns ul {
@@ -26,5 +26,10 @@ body {
 }
 
 .columns li>label {
+  cursor: pointer;
+}
+
+.controls button {
+  font-size: 16px;
   cursor: pointer;
 }

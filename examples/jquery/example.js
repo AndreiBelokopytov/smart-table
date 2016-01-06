@@ -139,6 +139,10 @@
     }
   });
 
+  $('#btn-refresh').on('click', function () {
+    smartTable.refresh();
+  });
+
   renderColumns();
 
 })();
