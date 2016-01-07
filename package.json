@@ -1,6 +1,6 @@
 {
-  "name": "smart-table",
-  "version": "0.1.0",
+  "name": "SmartTable",
+  "version": "0.1.1",
   "description": "Javascript powered dynamic html table with filtering, sorting and other opportunities",
   "main": "smart-table.js",
   "author": "Andrei Belokopytov <avbelokopytov@yahoo.com>",
