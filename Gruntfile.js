@@ -4,6 +4,7 @@ module.exports = function (grunt) {
   require('load-grunt-tasks')(grunt);
 
   grunt.initConfig({
+    pkg: grunt.file.readJSON('package.json'),
     sass: {
       options: {
         sourceMap: true,
@@ -22,6 +23,31 @@ module.exports = function (grunt) {
         ]
       }
     },
+    jshint: {
+      options: {
+        ignores: ['**/vendor/**'],
+        reporter: require('jshint-stylish'),
+        jshintrc: true
+      },
+      validate: ['js/*.js', 'examples/**/*.js']
+    },
+    uglify: {
+      options: {
+        banner: 
+          '/*!\n' +
+          ' * <%= pkg.name %> - v<%= pkg.version %>\n' +
+          ' * Developed by Andrei Belokopytov\n' +
+          ' * Licensed under the MIT license\n' +
+          ' *\n' +
+          ' */\n',
+        sourceMap: true
+      },
+      js: {
+        files: {
+          'dist/smart-table.min.js': ['js/smart-table.js']
+        }
+      }
+    },
     watch: {
       sass: {
         files: 'sass/*.sass',
@@ -30,5 +56,6 @@ module.exports = function (grunt) {
     },
   });
 
+  grunt.registerTask('build', ['jshint', 'sass', 'uglify']);
   grunt.registerTask('default', ['watch']);
 };
