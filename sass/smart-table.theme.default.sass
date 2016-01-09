@@ -1,3 +1,5 @@
+@charset "UTF-8"
+
 $table-fontsize: 12px
 $thead-background: #74CA9A
 $tbody-background: #f9f9f9
@@ -8,18 +10,20 @@ $th-border-width: 0
 $td-border-width: 1px
 $td-border-color: #e4e4e4
 
+=border-radius($radius)
+  -webkit-border-radius: $radius
+  -moz-border-radius: $radius
+  -ms-border-radius: $radius
+  border-radius: $radius
 
-table.smart-table
+.smart-table
   white-space: nowrap
   border-collapse: collapse
   font-size: $table-fontsize
 
-.smart-table
-
   .table-cell
     padding: 20px 8px
     text-align: center
-
 
   th
     @extend .table-cell
@@ -32,7 +36,7 @@ table.smart-table
     border-bottom: $td-border-width solid $td-border-color
 
   img
-    border-radius: 50%
+    +border-radius(50%)
 
   thead
     background-color: $thead-background
@@ -46,15 +50,21 @@ table.smart-table
     border-radius: 4px
     max-width: 220px
 
-  .filter.range-filter
-    max-width: 70px
-    display: inline-block
-
-  .filter.range-filter:first-child
-    margin-right: 8px
-
   select.filter
     -webkit-appearance: none
     -moz-appearance: none
     width: 100%
+    
+  .range-filter
+    max-width: 70px
+    display: inline-block
+    &:first-child
+      margin-right: 8px
 
+.smart-table-headers-bar
+
+  .sorted.sort-asc:after
+    content: " ↑"
+
+  .sorted.sort-desc:after
+    content: " ↓"
