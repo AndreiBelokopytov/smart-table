@@ -3,29 +3,29 @@ body {
 }
 
 .container {
-  width: 1200px;
+  width: 80%;
   margin: 25px auto;
 }
 
-.columns, .controls {
+.controls {
   margin-bottom: 25px;
 }
 
-.columns ul {
+.controls ul {
   margin: 0;
   padding: 0;
 }
 
-.columns li {
+.controls li {
   display: inline-block;
   margin-right: 12px;
 }
 
-.columns li:last-child {
+.controls li:last-child {
   margin-right: 0;
 }
 
-.columns li>label {
+.controls li>label {
   cursor: pointer;
 }
 
