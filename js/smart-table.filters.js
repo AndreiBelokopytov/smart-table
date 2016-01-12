@@ -94,14 +94,14 @@
         filterWrap = document.createDocumentFragment(),
         inputMin = Utils.createDomElem(
           'input',
-          self.cssClass += ' ' + CSS.FILTER_RANGE_MIN,
+          self.cssClass + ' ' + CSS.FILTER_RANGE_MIN,
           {
             type: 'text',
             placeholder: column.title
           }),
         inputMax = Utils.createDomElem(
           'input',
-          self.cssClass += ' ' + CSS.FILTER_RANGE_MAX,
+          self.cssClass + ' ' + CSS.FILTER_RANGE_MAX,
           {
             type: 'text',
             placeholder: column.title
