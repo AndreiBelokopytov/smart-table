@@ -43,18 +43,39 @@ module.exports = function (grunt) {
       },
       js: {
         files: {
-          'dist/smart-table.min.js': ['js/smart-table.js']
+          'dist/smart-table.min.js': ['dist/smart-table.js']
         }
       }
+    },
+    concat: {
+      dist: {
+        options: {
+          banner: ';(function () {\nvar SmartTable = {};\n',
+          footer: '})();'
+        },
+        files: {
+          'dist/smart-table.js': [
+            'js/smart-table.utils.js',
+            'js/smart-table.css.js',
+            'js/smart-table.comparators.js',
+            'js/smart-table.filters.js',
+            'js/smart-table.js',
+            'js/polyfills.js'],
+        },
+      },
     },
     watch: {
       sass: {
         files: 'sass/*.sass',
         tasks: ['sass']
+      },
+      js: {
+        files: 'js/*.js',
+        tasks: ['concat']
       }
     },
   });
 
-  grunt.registerTask('build', ['jshint', 'sass', 'uglify']);
+  grunt.registerTask('build', ['jshint', 'sass', 'concat', 'uglify']);
   grunt.registerTask('default', ['watch']);
 };
