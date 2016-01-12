@@ -1,9 +1,16 @@
+=box-sizing($box-model)
+  -webkit-box-sizing: $box-model
+  box-sizing: $box-model
+
 table.smart-table
   width: 100%
   table-layout: fixed
+  +box-sizing(border-box)
 
 .smart-table-headers-bar
 
   .sorted
     cursor: pointer
 
+.filter
+  +box-sizing(border-box)
