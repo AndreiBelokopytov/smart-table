@@ -1,9 +1,7 @@
 {
-	"version": 3,
-	"file": "smart-table.css",
-	"sources": [
-		"../sass/smart-table.sass"
-	],
-	"mappings": "AAAA,KAAK,AAAA,YAAY,CAAC;EAChB,KAAK,EAAE,IAAK;EACZ,YAAY,EAAE,KAAM;CAAG;;AAEzB,wBAAwB,CAEtB,OAAO,CAAC;EACN,MAAM,EAAE,OAAQ;CAAG",
-	"names": []
+"version": 3,
+"mappings": "AAIA,iBAAiB;EACf,KAAK,EAAE,IAAI;EACX,YAAY,EAAE,KAAK;EALnB,kBAAkB,EAMN,UAAU;EALtB,UAAU,EAKE,UAAU;;;AAItB,gCAAO;EACL,MAAM,EAAE,OAAO;;;AAEnB,OAAO;EAbL,kBAAkB,EAcN,UAAU;EAbtB,UAAU,EAaE,UAAU",
+"sources": ["../sass/smart-table.sass"],
+"names": [],
+"file": "smart-table.css"
 }
