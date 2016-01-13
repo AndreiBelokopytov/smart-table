@@ -1,10 +1,11 @@
 (function (SmartTable) {
   'use strict';
-  
+
   var Utils = {
     createDomElem: createDomElem,
     isNullOrUndef: isNullOrUndef,
-    inherit: inherit
+    inherit: inherit,
+    getObjectProperty: getObjectProperty
   };
 
   function createDomElem(elem, cssClass, attributes, textContent) {
@@ -33,7 +34,7 @@
 
     return elem;
   }
-  
+
   function isNullOrUndef() {
     for (var i = 0; i < arguments.length; i++) {
       if (arguments[i] === null || arguments[i] === undefined) {
@@ -42,15 +43,39 @@
     }
     return false;
   }
-  
+
   function inherit(Child, Parent) {
-    var F = function () {};
+    var F = function () { };
     F.prototype = Parent.prototype;
     Child.prototype = new F();
-    Child.prototype.constructor = Parent;
+    Child.prototype.constructor = Child;
     Child.super = Parent;
     return Child;
   }
-  
+
+   function getObjectProperty(object, property) {
+    var
+      val = object,
+      propertyPath;
+
+    if (typeof property === 'string') {
+      propertyPath = property.split('.');
+    } else {
+      throw Error('Column property should be a sting');
+    }
+
+    if (propertyPath.length) {
+      propertyPath.forEach(function (pathPart) {
+        if (val && val[pathPart] !== undefined &&
+          val[pathPart] !== null) {
+          val = val[pathPart];
+        } else {
+          val = null;
+        }
+      });
+    }
+    return val;
+  }
+
   SmartTable.Utils = Utils;
 })(SmartTable || {});

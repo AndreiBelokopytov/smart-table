@@ -4,7 +4,7 @@
   var
     Utils = SmartTable.Utils,
     CSS = SmartTable.CSS,
-    Filter = SmartTable.Filter;
+    Column = SmartTable.Column;
 
 
 
@@ -12,9 +12,7 @@
   function createTableContent(columns, data) {
     var
       rowElem,
-      colElem,
-      colVal,
-      columnAttributes = {},
+      cellElem,
       visibleColumns,
       tableRows = document.createDocumentFragment();
 
@@ -26,25 +24,12 @@
           });
 
           columns.forEach(function (column, colIndex) {
-            if (!column.hidden) {
-              columnAttributes['data-colindex'] = colIndex + 1;
-              colElem = Utils.createDomElem('td', '', columnAttributes);
-
-              if (column.isIndex) {
-                colElem.innerText = rowIndex + 1;
-              } else {
-                colVal = item[column.property];
-
-                if (colVal) {
-                  if (typeof column.formatter === 'function') {
-                    colElem.innerHTML = column.formatter(colVal);
-                  } else {
-                    colElem.innerText = colVal;
-                  }
-                }
-              }
-
-              rowElem.appendChild(colElem);
+            if (!column.isHidden) {
+              cellElem = Utils.createDomElem('td', '', {
+                'data-colindex': ++colIndex
+              });
+              cellElem.innerHTML = column.getCellHtml(item, rowIndex);
+              rowElem.appendChild(cellElem);
             }
           });
 
@@ -52,15 +37,13 @@
         });
       } else {
         visibleColumns = columns.filter(function (item) {
-          return !item.hidden;
+          return !item.isHidden;
         });
-        rowElem = Utils.createDomElem('tr', CSS.NO_DATA, {
-          'grid-rowindex': 1
-        });
-        colElem = Utils.createDomElem('td', CSS.NO_DATA, {
+        rowElem = Utils.createDomElem('tr', CSS.NO_DATA);
+        cellElem = Utils.createDomElem('td', CSS.NO_DATA, {
           colspan: visibleColumns.length
         }, 'No data');
-        rowElem.appendChild(colElem);
+        rowElem.appendChild(cellElem);
         tableRows.appendChild(rowElem);
       }
     }
@@ -83,7 +66,6 @@
 
     this._dataset = [];
     this._filtered = [];
-    this._filters = {};
     this._columns = options.columns || [];
 
     if (options.cssClass) {
@@ -96,16 +78,8 @@
       this.el = options.element;
     }
 
-    this._columns.forEach(function (column) {
-      if (column.type === 'index') {
-        column.isIndex = true;
-        column.noFilter = true;
-        column.noSort = true;
-      }
-      if (!column.noFilter) {
-        self._filters[column.property] =
-          Filter.createFilter(column);
-      }
+    this._columns = this._columns.map(function (columnOptions) {
+      return Column.createColumn(columnOptions);
     });
 
     this.getTableData = function () {};
@@ -113,30 +87,6 @@
     if (options.actions) {
       this.getTableData = options.actions.getData;
     }
-
-    this._getColumnValue = function (rowData, column) {
-      var
-        val = rowData,
-        propertyPath;
-
-      if (typeof column.property === 'string') {
-        propertyPath = column.property.split('.');
-      } else {
-        throw Error('Column property should be a sting');
-      }
-
-      if (propertyPath.length) {
-        propertyPath.forEach(function (pathPart) {
-          if (val && val[pathPart] !== undefined &&
-          val[pathPart] !== null) {
-            val = val[pathPart];
-          } else {
-            val = null;
-          }
-        });
-      }
-      return val;
-    };
 
     this._render = function () {
       var
@@ -150,8 +100,9 @@
           this._tbodyElem.removeChild(el);
         }
       }
-      this._setColumns(tableContent);
+      
       this._tbodyElem.appendChild(tableContent);
+      this._setColumns(tableContent);
     };
 
     this._clearFilters = function () {
@@ -180,6 +131,7 @@
 
           colElements = self._tableElem.querySelectorAll(
             'col[data-colindex="' + colIndex + '"], ' +
+            'td[data-colindex="' + colIndex + '"], ' +
             'th[data-colindex="' + colIndex + '"]');
 
           [].forEach.call(colElements, function (elem) {
@@ -203,13 +155,9 @@
         th,
         col,
         colWidth,
-        colIndex,
-        filter,
         columnClass = '',
-        columnAttributes = {},
         sortDataHandler = function (event) {
           var
-            colIndex,
             column,
             sortType,
             source = event.target;
@@ -217,8 +165,7 @@
           if (source.tagName === 'TH' &&
             source.classList.contains(CSS.COLUMN_SORTED)) {
 
-            colIndex = source.cellIndex;
-            column = self._columns[colIndex];
+            column = self._columns[source.cellIndex];
             if (source.classList.contains(CSS.COLUMN_SORT_ASC)) {
               sortType = CSS.COLUMN_SORT_DESC;
               self.sort(column, sortType);
@@ -241,25 +188,23 @@
           var
             td,
             column,
-            filter,
             source = event.target;
 
           if (source.tagName === 'INPUT' || source.tagName === 'SELECT') {
             td = source.closest('th');
             column = self._columns[td.cellIndex];
-            filter = self._filters[column.property];
 
             if (!source.classList.contains(CSS.FILTER_RANGE)) {
               if (source.tagName === 'INPUT' && source.type === 'checkbox') {
-                filter.setCondition(source.checked); 
+                column.filter.setCondition(source.checked); 
               } else {
-                filter.setCondition(source.value);
+                column.filter.setCondition(source.value);
               }
             } else {
               if (source.classList.contains(CSS.FILTER_RANGE_MIN)) {
-                filter.setCondition(source.value, 0);
+                column.filter.setCondition(source.value, 0);
               } else if (source.classList.contains(CSS.FILTER_RANGE_MAX)) {
-                filter.setCondition(source.value, 1);
+                column.filter.setCondition(source.value, 1);
               }
             }
             self.filter();
@@ -274,26 +219,26 @@
       this._headersBar = Utils.createDomElem('tr', CSS.HEADERS_BAR);
       this._filtersBar = Utils.createDomElem('tr', CSS.FILTERS_BAR);
 
-      this._columns.forEach(function (column, index) {
-        colIndex = index + 1;
+      this._columns.forEach(function (column, colIndex) {
 
         if (!column.noSort) {
           columnClass = CSS.COLUMN_SORTED;
         }
 
-        columnAttributes['data-colindex'] = colIndex;
-
-        th = Utils.createDomElem('th', columnClass, columnAttributes, column.title);
+        th = Utils.createDomElem('th', columnClass, {
+          'data-colindex': ++colIndex
+        }, column.title);
         self._headersBar.appendChild(th);
 
-        th = Utils.createDomElem('th', '', columnAttributes);
-        if (self._filters[column.property]) {
-          filter = self._filters[column.property];
-          th.appendChild(filter.getFilterElement());
+        th = Utils.createDomElem('th', '', {
+          'data-colindex': ++colIndex
+        });
+        if (column.filter) {
+          th.appendChild(column.filter.getFilterElement());
         }
         self._filtersBar.appendChild(th);
 
-        col = Utils.createDomElem('col', '', columnAttributes);
+        col = Utils.createDomElem('col', '');
         if (column.width) {
           colWidth = parseInt(column.width, 10);
           if (isNaN(colWidth)) {
@@ -335,15 +280,15 @@
 
       this.getTableData(function (data) {
         var
-          colVal,
+          cellVal,
           mappedItem;
 
         data.forEach(function (item) {
           mappedItem = {};
           self._columns.forEach(function (column) {
             if (column.property) {
-              colVal = self._getColumnValue(item, column);
-              mappedItem[column.property] = colVal;
+              cellVal = Utils.getObjectProperty(item, column.property);
+              mappedItem[column.property] = cellVal;
             }
           });
           self._dataset.push(mappedItem);
@@ -356,27 +301,17 @@
     filter: function () {
       var
         self = this,
-        checked,
-        prop,
-        colValue,
-        filter;
+        checked;
 
       this._filtered = [];
 
       this._dataset.forEach(function (item) {
-        checked = true;
-        for (prop in item) {
-          if (item.hasOwnProperty(prop)) {
-            filter = self._filters[prop];
-            if (filter) {
-              colValue = item[prop];
-              checked = filter.check(colValue);
-              if (!checked) {
-                break;
-              }
-            }
+        checked = self._columns.every(function (column) {
+          if (column.filter) {
+            return column.filter.check(item[column.property]);
           }
-        }
+          return true;
+        });
         if (checked) {
           self._filtered.push(item);
         }

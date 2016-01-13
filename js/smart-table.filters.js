@@ -11,16 +11,13 @@
     COLUMN_TYPE_SELECT = 'select',
     COLUMN_TYPE_CHECKBOX = 'checkbox';
   
-  function Filter(column) {
+  function Filter(options) {
     var self = this;
     
     self.condition = [];
     self.cssClass = CSS.FILTER;
-    if (column.filter) {
-      self.cssClass += column.filter.cssClass ?
-        ' ' + column.filter.cssClass : '';
-      self.parser = column.filter.valueParser;
-    }
+    self.cssClass += options.cssClass ? ' ' + options.cssClass : '';
+    self.parser = options.valueParser;
   }
 
   Filter.prototype = {
@@ -52,25 +49,25 @@
     }
   };
 
-  Filter.createFilter = function (column) {
-    switch (column.type) {
+  Filter.createFilter = function (options) {
+    switch (options.type) {
       case COLUMN_TYPE_TEXT:
-        return new TextFilter(column);
+        return new TextFilter(options);
       case COLUMN_TYPE_RANGE:
-        return new RangeFilter(column);
+        return new RangeFilter(options);
       case COLUMN_TYPE_SELECT:
-        return new SelectFilter(column);
+        return new SelectFilter(options);
       case COLUMN_TYPE_CHECKBOX:
-        return new CheckboxFilter(column);
+        return new CheckboxFilter(options);
       default:
-        return new TextFilter(column);
+        return new TextFilter(options);
     }
   };
 
 
 
 
-  function TextFilter(column) {
+  function TextFilter(options) {
     TextFilter.super.apply(this, arguments);
 
     this.getFilterElement = function () {
@@ -79,7 +76,7 @@
         this.cssClass,
         {
           type: 'text',
-          placeholder: column.title
+          placeholder: options.placeholder || ''
         });
     };
   }
@@ -91,7 +88,7 @@
 
 
 
-  function RangeFilter(column) {
+  function RangeFilter(options) {
     var self = this;
     
     RangeFilter.super.apply(self, arguments);
@@ -108,14 +105,14 @@
           self.cssClass + ' ' + CSS.FILTER_RANGE_MIN,
           {
             type: 'text',
-            placeholder: column.title
+            placeholder: options.placeholderMin || ''
           }),
         inputMax = Utils.createDomElem(
           'input',
           self.cssClass + ' ' + CSS.FILTER_RANGE_MAX,
           {
             type: 'text',
-            placeholder: column.title
+            placeholder: options.placeholderMax || ''
           });
 
       filterWrap.appendChild(inputMin);
@@ -132,7 +129,7 @@
 
 
 
-  function SelectFilter(column) {
+  function SelectFilter(options) {
     var self = this;
     
     SelectFilter.super.apply(self, arguments);
@@ -144,7 +141,7 @@
         optionElem,
         optionData,
         index = 0,
-        selectOptionsLen = column.selectOptions.length;
+        selectOptionsLen = options.selectOptions.length;
 
       optionElem = Utils.createDomElem('option', '', {
         value: ''
@@ -152,7 +149,7 @@
       selectElem.appendChild(optionElem);
 
       for (; index < selectOptionsLen; index++) {
-        optionData = column.selectOptions[index];
+        optionData = options.selectOptions[index];
         optionElem = Utils.createDomElem('option', self.cssClass,
           {
             value: optionData.value
@@ -170,12 +167,10 @@
 
 
 
+
   function CheckboxFilter() {
     CheckboxFilter.super.apply(this, arguments);
-
-    // this.hasCondition = function () {
-    //   return Boolean(this.condition[0]);
-    // };
+    
     this.getFilterElement = function () {
       var input = Utils.createDomElem(
         'input',
