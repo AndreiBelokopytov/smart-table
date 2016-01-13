@@ -35,6 +35,12 @@
           value: 'Female'
         }
       ]
+    },
+    {
+      title: 'Registered',
+      property: 'registered',
+      type: 'checkbox',
+      width: 120
     }
   ];
 

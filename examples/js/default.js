@@ -19,7 +19,8 @@
     },
     {
       title: 'Email',
-      property: 'email'
+      property: 'email',
+      width: 220
     },
     {
       title: 'Gender',
@@ -34,7 +35,14 @@
           text: 'Female',
           value: 'Female'
         }
-      ]
+      ],
+      width: 110
+    },
+    {
+      title: 'Registered',
+      property: 'registered',
+      type: 'checkbox',
+      width: 120
     }
   ];
 
