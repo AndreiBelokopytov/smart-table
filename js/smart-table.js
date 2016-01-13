@@ -220,25 +220,28 @@
       this._filtersBar = Utils.createDomElem('tr', CSS.FILTERS_BAR);
 
       this._columns.forEach(function (column, colIndex) {
+        ++colIndex;
 
         if (!column.noSort) {
           columnClass = CSS.COLUMN_SORTED;
         }
 
         th = Utils.createDomElem('th', columnClass, {
-          'data-colindex': ++colIndex
+          'data-colindex': colIndex
         }, column.title);
         self._headersBar.appendChild(th);
 
         th = Utils.createDomElem('th', '', {
-          'data-colindex': ++colIndex
+          'data-colindex': colIndex
         });
         if (column.filter) {
           th.appendChild(column.filter.getFilterElement());
         }
         self._filtersBar.appendChild(th);
 
-        col = Utils.createDomElem('col', '');
+        col = Utils.createDomElem('col', '', {
+          'data-colindex': colIndex
+        });
         if (column.width) {
           colWidth = parseInt(column.width, 10);
           if (isNaN(colWidth)) {
