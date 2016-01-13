@@ -7,40 +7,56 @@
     columns = [
     {
       title: 'Id',
-      property: 'id'
+      property: 'id',
+      filter: {
+        type: 'text'
+      }
     },
     {
       title: 'First Name',
-      property: 'first_name'
+      property: 'first_name',
+      filter: {
+        type: 'text'
+      }
     },
     {
       title: 'LastName',
-      property: 'last_name'
+      property: 'last_name',
+      filter: {
+        type: 'text'
+      }
     },
     {
       title: 'Email',
-      property: 'email'
+      property: 'email',
+      filter: {
+        type: 'text'
+      }
     },
     {
       title: 'Gender',
       property: 'gender',
-      type: 'select',
-      selectOptions: [
-        {
-          text: 'Male',
-          value: 'Male'
-        },
-        {
-          text: 'Female',
-          value: 'Female'
-        }
-      ]
+      filter: {
+        type: 'select',
+        selectOptions: [
+          {
+            text: 'Male',
+            value: 'Male'
+          },
+          {
+            text: 'Female',
+            value: 'Female'
+          }
+        ]
+      }
     },
     {
       title: 'Registered',
       property: 'registered',
-      type: 'checkbox',
-      width: 120
+      filter: {
+        type: 'checkbox',
+        width: 120
+      }
     }
   ];
 

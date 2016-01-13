@@ -5,42 +5,56 @@
     smartTable,
     columns = [
       {
-        title: '#',
         type: 'index',
+        title: '#',
         width: 75
       },
       {
         title: 'Username',
-        property: 'user.username'
+        property: 'user.username',
+        filter: {
+          type: 'text'
+        }
       },
       {
         title: 'Email',
         property: 'user.email',
-        width: 230
+        width: 230,
+        filter: {
+          type: 'text'
+        }
       },
       {
         title: 'First Name',
-        property: 'user.name.first'
+        property: 'user.name.first',
+        filter: {
+          type: 'text'
+        }
       },
       {
         title: 'LastName',
-        property: 'user.name.last'
+        property: 'user.name.last',
+        filter: {
+          type: 'text'
+        }
       },
       {
         title: 'Gender',
         property: 'user.gender',
-        type: 'select',
-        width: 120,
-        selectOptions: [
-          {
-            text: 'Male',
-            value: 'Male'
-          },
-          {
-            text: 'Female',
-            value: 'Female'
-          }
-        ]
+        filter: {
+          type: 'select',
+          selectOptions: [
+            {
+              text: 'Male',
+              value: 'Male'
+            },
+            {
+              text: 'Female',
+              value: 'Female'
+            }
+          ]
+        },
+        width: 120
       }];
 
   smartTable = new SmartTable({

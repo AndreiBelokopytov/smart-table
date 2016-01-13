@@ -7,42 +7,57 @@
     columns = [
     {
       title: 'Id',
-      property: 'id'
+      property: 'id',
+      width: 120,
+      filter: {
+        type: 'text'
+      }
     },
     {
       title: 'First Name',
-      property: 'first_name'
+      property: 'first_name',
+      filter: {
+        type: 'text'
+      }
     },
     {
       title: 'LastName',
-      property: 'last_name'
+      property: 'last_name',
+      filter: {
+        type: 'text'
+      }
     },
     {
       title: 'Email',
       property: 'email',
-      width: 240
+      width: 240,
+      filter: {
+        type: 'text'
+      }
     },
     {
       title: 'Gender',
       property: 'gender',
-      type: 'select',
-      selectOptions: [
-        {
-          text: 'Male',
-          value: 'Male'
-        },
-        {
-          text: 'Female',
-          value: 'Female'
-        }
-      ]
+      filter: {
+        type: 'select',
+        selectOptions: [
+          {
+            text: 'Male',
+            value: 'Male'
+          },
+          {
+            text: 'Female',
+            value: 'Female'
+          }
+        ]
+      }
     },
     {
       title: 'Registration Date',
       property: 'registration_date',
-      type: 'range',
       formatter: displayDate,
       filter: {
+        type: 'range',
         cssClass: 'datepicker',
         valueParser: parseDate
       }
