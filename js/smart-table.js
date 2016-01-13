@@ -250,7 +250,11 @@
             filter = self._filters[column.property];
 
             if (!source.classList.contains(CSS.FILTER_RANGE)) {
-              filter.setCondition(source.value);
+              if (source.tagName === 'INPUT' && source.type === 'checkbox') {
+                filter.setCondition(source.checked); 
+              } else {
+                filter.setCondition(source.value);
+              }
             } else {
               if (source.classList.contains(CSS.FILTER_RANGE_MIN)) {
                 filter.setCondition(source.value, 0);

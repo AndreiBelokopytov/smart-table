@@ -2,10 +2,6 @@
   'use strict';
 
   var CSS = {
-    COLUMN_TYPE_TEXT: 'text',
-    COLUMN_TYPE_RANGE: 'range',
-    COLUMN_TYPE_SELECT: 'select',
-
     FILTER: 'filter',
     FILTER_RANGE: 'range-filter',
     FILTER_RANGE_MIN: 'range-min',

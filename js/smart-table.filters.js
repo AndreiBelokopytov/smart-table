@@ -4,11 +4,17 @@
   var
     CSS = SmartTable.CSS,
     Utils = SmartTable.Utils,
-    Comparators = SmartTable.Comparators;
+    Comparators = SmartTable.Comparators,
+    
+    COLUMN_TYPE_TEXT = 'text',
+    COLUMN_TYPE_RANGE = 'range',
+    COLUMN_TYPE_SELECT = 'select',
+    COLUMN_TYPE_CHECKBOX = 'checkbox';
   
   function Filter(column) {
     var self = this;
     
+    self.condition = [];
     self.cssClass = CSS.FILTER;
     if (column.filter) {
       self.cssClass += column.filter.cssClass ?
@@ -18,8 +24,17 @@
   }
 
   Filter.prototype = {
+    hasCondition: function () {
+      return this.condition.length && this.condition.every(function (item) {
+        return !!item;
+      });
+    },
     check: function (val) {
       var self = this;
+      
+      if (!this.hasCondition()) {
+        return true;
+      }
       
       if (Utils.isNullOrUndef(val)) {
         return false;
@@ -28,29 +43,25 @@
     },
     setCondition: function (val, index) {
       var self = this;
+      index = index || 0;
       
       if (self.parser) {
         val = self.parser(val);
       }
-      if (Utils.isNullOrUndef(index)) {
-        self.condition = val;
-      } else {
-        if (!Array.isArray(self.condition)) {
-          self.condition = [];
-        }
-        self.condition[index] = val;
-      }
+      self.condition[index] = val;
     }
   };
 
   Filter.createFilter = function (column) {
     switch (column.type) {
-      case CSS.COLUMN_TYPE_TEXT:
+      case COLUMN_TYPE_TEXT:
         return new TextFilter(column);
-      case CSS.COLUMN_TYPE_RANGE:
+      case COLUMN_TYPE_RANGE:
         return new RangeFilter(column);
-      case CSS.COLUMN_TYPE_SELECT:
+      case COLUMN_TYPE_SELECT:
         return new SelectFilter(column);
+      case COLUMN_TYPE_CHECKBOX:
+        return new CheckboxFilter(column);
       default:
         return new TextFilter(column);
     }
@@ -156,6 +167,32 @@
   Utils.inherit(SelectFilter, Filter);
 
   SelectFilter.prototype.comparator = Comparators.equalComparator;
+
+
+
+  function CheckboxFilter() {
+    CheckboxFilter.super.apply(this, arguments);
+
+    // this.hasCondition = function () {
+    //   return Boolean(this.condition[0]);
+    // };
+    this.getFilterElement = function () {
+      var input = Utils.createDomElem(
+        'input',
+        this.cssClass,
+        {
+          type: 'checkbox',
+        }),
+        label = Utils.createDomElem('label');
+
+      label.appendChild(input);
+      return label;
+    };
+  }
+
+  Utils.inherit(CheckboxFilter, Filter);
+  CheckboxFilter.prototype.comparator = Comparators.existComparator;
+  
   
   
   

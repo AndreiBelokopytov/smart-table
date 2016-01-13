@@ -1,42 +1,44 @@
 (function (SmartTable) {
   'use strict';
   
-  var Comparators = {
-    containComparator: containComparator,
-    rangeComparator: rangeComparator,
-    equalComparator: equalComparator
-  };
+  var
+    Comparators = {
+      containComparator: containComparator,
+      rangeComparator: rangeComparator,
+      equalComparator: equalComparator,
+      existComparator: existComparator
+    };
   
   function containComparator(val, condition) {
-    if (!condition) {
-      return true;
-    }
-    return val.toString().indexOf(condition) >= 0;
+    var substr = condition[0];
+    return val.toString().indexOf(substr) >= 0;
   }
 
   function rangeComparator(val, condition) {
-    var conditionMin = condition[0],
-      conditionMax = condition[1];
+    var rangeMin = condition[0],
+      rangeMax = condition[1];
 
-    if (!conditionMax && !conditionMin) {
+    if (!rangeMax && !rangeMin) {
       return true;
     }
 
-    if (!conditionMin) {
-      return val <= conditionMax;
-    } else if (!conditionMax) {
-      return val >= conditionMin;
+    if (!rangeMin) {
+      return val <= rangeMax;
+    } else if (!rangeMax) {
+      return val >= rangeMin;
     } else {
-      return val <= conditionMax && val >= conditionMin;
+      return val <= rangeMax && val >= rangeMin;
     }
   }
 
   function equalComparator(val, condition) {
-    if (condition && val !== condition) {
-      return false;
-    }
-    return true;
+    var equalTo = condition[0];
+    return val === equalTo;
   }
-  
+
+  function existComparator(val) {
+    return Boolean(val);
+  }
+
   SmartTable.Comparators = Comparators;
 })(SmartTable || {});
