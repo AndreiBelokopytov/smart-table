@@ -4,6 +4,9 @@ table.smart-table {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
 }
+table.smart-table .smart-table-hidden {
+  display: none;
+}
 
 .smart-table-headers-bar .sorted {
   cursor: pointer;

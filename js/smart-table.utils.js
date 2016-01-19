@@ -35,6 +35,7 @@
     return elem;
   }
 
+  //TODO: replace with obj == null
   function isNullOrUndef() {
     for (var i = 0; i < arguments.length; i++) {
       if (arguments[i] === null || arguments[i] === undefined) {

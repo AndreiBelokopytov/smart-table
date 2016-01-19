@@ -32,7 +32,7 @@ module.exports = function (grunt) {
     },
     uglify: {
       options: {
-        banner: 
+        banner:
           '/*!\n' +
           ' * <%= pkg.name %> - v<%= pkg.version %>\n' +
           ' * Developed by Andrei Belokopytov\n' +
@@ -59,6 +59,7 @@ module.exports = function (grunt) {
             'js/smart-table.css.js',
             'js/smart-table.comparators.js',
             'js/smart-table.filters.js',
+            'js/smart-table.editors.js',
             'js/smart-table.columns.js',
             'js/smart-table.js',
             'js/polyfills.js'],
