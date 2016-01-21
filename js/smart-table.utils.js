@@ -5,7 +5,7 @@
     createDomElem: createDomElem,
     isNullOrUndef: isNullOrUndef,
     inherit: inherit,
-    getObjectProperty: getObjectProperty
+    pickProperties: pickProperties
   };
 
   function createDomElem(elem, cssClass, attributes, textContent) {
@@ -54,7 +54,7 @@
     return Child;
   }
 
-   function getObjectProperty(object, property) {
+   function pickProperty(object, property) {
     var
       val = object,
       propertyPath;
@@ -76,6 +76,14 @@
       });
     }
     return val;
+  }
+
+  function pickProperties(obj, properties) {
+    var mappedObject = {};
+    properties.forEach(function (prop) {
+      mappedObject[prop] = pickProperty(obj, prop);
+    });
+    return mappedObject;
   }
 
   SmartTable.Utils = Utils;

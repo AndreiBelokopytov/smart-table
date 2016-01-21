@@ -61,6 +61,7 @@ module.exports = function (grunt) {
             'js/smart-table.filters.js',
             'js/smart-table.editors.js',
             'js/smart-table.columns.js',
+            'js/smart-table.row.js',
             'js/smart-table.js',
             'js/polyfills.js'],
         },

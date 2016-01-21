@@ -4,52 +4,9 @@
   var
     Utils = SmartTable.Utils,
     CSS = SmartTable.CSS,
-    Column = SmartTable.Column;
-
-
-
-
-  function createTableContent(columns, data) {
-    var
-      rowElem,
-      cellElem,
-      visibleColumns,
-      tableRows = document.createDocumentFragment();
-
-    if (Array.isArray(data)) {
-      if (data.length) {
-        data.forEach(function (item, rowIndex) {
-          rowElem = Utils.createDomElem('tr', '', {
-            'data-rowid': item.__rowId
-          });
-
-          columns.forEach(function (column, colIndex) {
-            if (!column.isHidden) {
-              cellElem = Utils.createDomElem('td', '', {
-                'data-colindex': ++colIndex
-              });
-              cellElem.innerHTML = column.getCellHtml(item, rowIndex);
-              rowElem.appendChild(cellElem);
-            }
-          });
-
-          tableRows.appendChild(rowElem);
-        });
-      } else {
-        visibleColumns = columns.filter(function (item) {
-          return !item.isHidden;
-        });
-        rowElem = Utils.createDomElem('tr', CSS.NO_DATA);
-        cellElem = Utils.createDomElem('td', CSS.NO_DATA, {
-          colspan: visibleColumns.length
-        }, 'No data');
-        rowElem.appendChild(cellElem);
-        tableRows.appendChild(rowElem);
-      }
-    }
-
-    return tableRows;
-  }
+    Column = SmartTable.Column,
+    TableRow = SmartTable.Row,
+    Row;
 
 
 
@@ -65,8 +22,7 @@
 
     this._cssClass = CSS.TABLE;
 
-    this._dataset = [];
-    this._filtered = [];
+    this._rows = [];
     this._columns = options.columns || [];
 
     if (options.cssClass) {
@@ -79,9 +35,12 @@
       this.el = options.element;
     }
 
+    //create columns
     this._columns = this._columns.map(function (columnOptions) {
       return Column.createColumn(columnOptions);
     });
+
+    Row = new TableRow(this._columns);
 
     this.getTableData = function () { };
     this.deleteRow = function () { };
@@ -95,19 +54,38 @@
 
     this._render = function () {
       var
-        el,
-        tableContent = createTableContent(this._columns, this._filtered),
-        contentLen = this._tbodyElem.children.length;
+        tr,
+        tableContent = document.createDocumentFragment(),
+        columns = this._columns,
+        visibleColumns,
+        rows = this._rows,
+        tbody = this._tbodyElem,
+        contentLen = tbody.children.length;
 
       while (contentLen--) {
-        el = this._tbodyElem.children[contentLen];
-        if (el.tagName === 'TR') {
-          this._tbodyElem.removeChild(el);
+        tr = tbody.children[contentLen];
+        if (tr.tagName === 'TR') {
+          this._tbodyElem.removeChild(tr);
         }
       }
 
-      this._tbodyElem.appendChild(tableContent);
-      this._setColumns(tableContent);
+      if (rows.length) {
+        rows.forEach(function (row, index) {
+          tr = row.getElement(columns, index);
+          tableContent.appendChild(tr);
+        });
+      } else {
+        visibleColumns = columns.filter(function (column) {
+          return !column.isHidden;
+        });
+        tr = Utils.createDomElem('tr', {
+          colspan: visibleColumns.length
+        }, 'No data');
+        tableContent.appendChild(tr);
+      }
+
+      tbody.appendChild(tableContent);
+      this._setColumns();
     };
 
     this._clearFilters = function () {
@@ -126,21 +104,21 @@
     };
 
     this._cancelEdit = function () {
-      var
-        rowsInEditMode,
-        hiddenRows;
+      var tbody = this._tbodyElem,
+          rows = this._rows,
+          columns = this._columns,
+          row,
+          rowIndex,
+          rowsInEditMode;
 
-      hiddenRows = self._tbodyElem.querySelectorAll('.' + CSS.HIDDEN);
-      rowsInEditMode = self._tbodyElem.querySelectorAll('.' + CSS.EDIT_MODE);
-
-      //display hidden rows
-      [].forEach.call(hiddenRows, function (row) {
-        row.classList.remove(CSS.HIDDEN);
-      });
+      rowsInEditMode = tbody.querySelectorAll('.' + CSS.EDIT_MODE);
 
       //close all open editors
-      [].forEach.call(rowsInEditMode, function (row) {
-        self._tbodyElem.removeChild(row);
+      Array.prototype.forEach.call(rowsInEditMode, function (tr) {
+        rowIndex = tr.sectionRowIndex;
+        row = rows[rowIndex];
+        row.cancelEdit();
+        tbody.replaceChild(row.getElement(columns, rowIndex), tr);
       });
     };
 
@@ -165,7 +143,7 @@
 
       this._columns.forEach(function (column, index) {
         colIndex = index + 1;
-        if (column.hidden) {
+        if (column.isHidden) {
           display = 'none';
         } else {
           display = '';
@@ -174,180 +152,137 @@
       }, this);
     };
 
+    this._sortHandler = function (event) {
+      var columns = this._columns,
+          headersBar = this._headersBar,
+          column,
+          sortType,
+          source = event.target;
+
+      if (source.tagName === 'TH' &&
+        source.classList.contains(CSS.COLUMN_SORTED)) {
+
+        column = columns[source.cellIndex];
+        sortType = source.classList.contains(CSS.COLUMN_SORT_ASC) ?
+          CSS.COLUMN_SORT_DESC
+          : CSS.COLUMN_SORT_ASC;
+        this.sort(column, sortType);
+
+        Array.prototype.forEach.call(headersBar.children, function (node) {
+          if (node.tagName === 'TH') {
+            node.classList.remove(CSS.COLUMN_SORT_ASC);
+            node.classList.remove(CSS.COLUMN_SORT_DESC);
+          }
+        });
+
+        source.classList.add(sortType);
+      }
+    };
+
+    this._filterHandler = function (event) {
+      var columns = this._columns,
+          td,
+          column,
+          source = event.target;
+
+      if (source.tagName === 'INPUT' || source.tagName === 'SELECT') {
+        td = source.closest('th');
+        column = columns[td.cellIndex];
+
+        if (!source.classList.contains(CSS.FILTER_RANGE)) {
+          if (source.tagName === 'INPUT' && source.type === 'checkbox') {
+            column.filter.setCondition(source.checked);
+          } else {
+            column.filter.setCondition(source.value);
+          }
+        } else {
+          if (source.classList.contains(CSS.FILTER_RANGE_MIN)) {
+            column.filter.setCondition(source.value, 0);
+          } else if (source.classList.contains(CSS.FILTER_RANGE_MAX)) {
+            column.filter.setCondition(source.value, 1);
+          }
+        }
+        this.filter();
+      }
+    };
+
+    this._deleteHandler = function (evt) {
+      var self = this,
+          source = evt.target,
+          rows = this._rows,
+          tr,
+          selectedRow,
+          rowValues;
+
+      evt.preventDefault();
+      if (source.classList.contains(CSS.BTN_DELETE_ROW)) {
+        tr = source.closest('tr');
+        selectedRow = rows[tr.sectionRowIndex];
+        rowValues = selectedRow.getValues();
+        this.deleteRow(rowValues, function () {
+          rows.splice(tr.sectionRowIndex, 1);
+          self._render();
+        });
+      }
+    };
+
+    this._editHandler = function (evt) {
+      var source = evt.target,
+          rows = this._rows,
+          columns = this._columns,
+          editor,
+          selectedRow,
+          tr;
+
+      evt.preventDefault();
+
+      if (source.classList.contains(CSS.BTN_EDIT_ROW) &&
+        !source.classList.contains(CSS.EDIT_MODE)) {
+
+        this._cancelEdit();
+
+        tr = source.closest('tr');
+        selectedRow = rows[tr.sectionRowIndex];
+        selectedRow.edit();
+
+        editor = selectedRow.getElement(columns);
+        self._tbodyElem.replaceChild(editor, tr);
+      }
+    };
+
+    this._confirmEditHandler = function (evt) {
+      var source = evt.target,
+          rows = this._rows,
+          selectedRow,
+          tr,
+          rowValues;
+
+      if (source.classList.contains(CSS.EDITOR_CONFIRM)) {
+        tr = source.closest('tr');
+        selectedRow = rows[tr.sectionRowIndex];
+        selectedRow.commitChanges();
+        rowValues = selectedRow.getValues();
+        self.editRow(rowValues, function () {
+          self._cancelEdit();
+          self._render();
+        });
+      }
+    };
+
+    this._cancelEditHandler = function (evt) {
+      var source = evt.target;
+
+      if (source.classList.contains(CSS.EDITOR_DECLINE)) {
+        self._cancelEdit();
+      }
+    };
+
     (function initGrid() {
       var
         th,
         col,
         colWidth,
-        columnClass = '',
-        sortHandler = function (event) {
-          var
-            column,
-            sortType,
-            source = event.target;
-
-          if (source.tagName === 'TH' &&
-            source.classList.contains(CSS.COLUMN_SORTED)) {
-
-            column = self._columns[source.cellIndex];
-            if (source.classList.contains(CSS.COLUMN_SORT_ASC)) {
-              sortType = CSS.COLUMN_SORT_DESC;
-              self.sort(column, sortType);
-            } else {
-              sortType = CSS.COLUMN_SORT_ASC;
-              self.sort(column, sortType);
-            }
-
-            [].forEach.call(self._headersBar.children, function (node) {
-              if (node.tagName === 'TH') {
-                node.classList.remove(CSS.COLUMN_SORT_ASC);
-                node.classList.remove(CSS.COLUMN_SORT_DESC);
-              }
-            });
-
-            source.classList.add(sortType);
-          }
-        },
-        filterHandler = function (event) {
-          var
-            td,
-            column,
-            source = event.target;
-
-          if (source.tagName === 'INPUT' || source.tagName === 'SELECT') {
-            td = source.closest('th');
-            column = self._columns[td.cellIndex];
-
-            if (!source.classList.contains(CSS.FILTER_RANGE)) {
-              if (source.tagName === 'INPUT' && source.type === 'checkbox') {
-                column.filter.setCondition(source.checked);
-              } else {
-                column.filter.setCondition(source.value);
-              }
-            } else {
-              if (source.classList.contains(CSS.FILTER_RANGE_MIN)) {
-                column.filter.setCondition(source.value, 0);
-              } else if (source.classList.contains(CSS.FILTER_RANGE_MAX)) {
-                column.filter.setCondition(source.value, 1);
-              }
-            }
-            self.filter();
-          }
-        },
-        deleteHandler = function (evt) {
-          var
-            source = evt.target,
-            tr,
-            rowId,
-            dataItem,
-            itemIndex;
-
-          evt.preventDefault();
-          if (source.classList.contains(CSS.BTN_DELETE_ROW)) {
-            tr = source.closest('tr');
-            rowId = parseInt(tr.dataset.rowid);
-            dataItem = self._dataset.filter(function (item, index) {
-              if (item.__rowId === rowId) {
-                itemIndex = index;
-                return item;
-              }
-            });
-            if (dataItem && dataItem.length) {
-              dataItem = dataItem[0];
-
-              self.deleteRow(dataItem, function () {
-                self._dataset.splice(itemIndex, 1);
-                self._tbodyElem.removeChild(tr);
-              });
-            }
-          }
-        },
-        editHandler = function (evt) {
-          var
-            source = evt.target,
-            editor,
-            rowData,
-            tr,
-            td;
-
-          evt.preventDefault();
-
-          if (source.classList.contains(CSS.BTN_EDIT_ROW) &&
-            !source.classList.contains(CSS.EDIT_MODE)) {
-
-            self._cancelEdit();
-
-            tr = source.closest('tr');
-            rowData = self._filtered[tr.sectionRowIndex];
-            editor = Utils.createDomElem('tr', CSS.EDIT_MODE, {
-              'data-rowid': rowData.__rowId
-            });
-            self._columns.forEach(function (column) {
-              if (!column.isHidden) {
-                td = Utils.createDomElem('td');
-                if (column.editor) {
-                  td.appendChild(column.editor.getEditorElement(rowData));
-                } else {
-                  td.innerHTML = column.getCellHtml(rowData);
-                }
-                editor.appendChild(td);
-              }
-            });
-            self._tbodyElem.insertBefore(editor, tr);
-            tr.classList.add(CSS.HIDDEN);
-          }
-        },
-        confirmEditHandler = function (evt) {
-          var source = evt.target,
-              tr,
-              cellInput,
-              cellProp,
-              dataItem,
-              column,
-              itemIndex,
-              rowId;
-
-          if (source.classList.contains(CSS.EDITOR_CONFIRM)) {
-            tr = source.closest('tr');
-            rowId = parseInt(tr.dataset.rowid);
-
-            dataItem = self._dataset.filter(function (item, index) {
-              if (item.__rowId === rowId) {
-                itemIndex = index;
-                return item;
-              }
-            });
-
-            dataItem = dataItem[0];
-            [].forEach.call(tr.children, function (cell) {
-              cellInput = cell.querySelector('input, select');
-              if (cellInput) {
-                cellProp = cellInput.dataset.columnProperty;
-                if (cellProp) {
-                  column = self._columns.filter(function (column) {
-                    if (column.property === cellProp) {
-                      return column;
-                    }
-                  });
-                  column = column[0];
-                  dataItem[cellProp] = column.editor.parseValue(cellInput.value);
-                }
-              }
-            });
-            self.editRow(dataItem, function () {
-              self._dataset[itemIndex] = dataItem;
-              self._cancelEdit();
-              self._render();
-            });
-          }
-        },
-        cancelEditHandler = function (evt) {
-          var source = evt.target;
-
-          if (source.classList.contains(CSS.EDITOR_DECLINE)) {
-            self._cancelEdit();
-          }
-        };
+        columnClass = '';
 
       this._tableElem = Utils.createDomElem('table', this._cssClass, {
         cols: this._columns.length
@@ -395,13 +330,20 @@
       });
 
       ///TODO: throttle events
-      this._filtersBar.addEventListener('input', filterHandler);
-      this._filtersBar.addEventListener('change', filterHandler);
-      this._headersBar.addEventListener('click', sortHandler);
-      this._tbodyElem.addEventListener('click', deleteHandler);
-      this._tbodyElem.addEventListener('click', editHandler);
-      this._tbodyElem.addEventListener('click', confirmEditHandler);
-      this._tbodyElem.addEventListener('click', cancelEditHandler);
+      this._filtersBar.addEventListener('input',
+        this._filterHandler.bind(this));
+      this._filtersBar.addEventListener('change',
+        this._filterHandler.bind(this));
+      this._headersBar.addEventListener('click',
+        this._sortHandler.bind(this));
+      this._tbodyElem.addEventListener('click',
+        this._deleteHandler.bind(this));
+      this._tbodyElem.addEventListener('click',
+        this._editHandler.bind(this));
+      this._tbodyElem.addEventListener('click',
+        this._confirmEditHandler.bind(this));
+      this._tbodyElem.addEventListener('click',
+        this._cancelEditHandler.bind(this));
 
       this._theadElem.appendChild(this._headersBar);
       this._theadElem.appendChild(this._filtersBar);
@@ -417,60 +359,50 @@
   //public api
   SmartTableConstructor.prototype = {
     refresh: function () {
-      var self = this;
+      var self = this,
+          rows = this._rows = [];
 
-      this._dataset = [];
-      this._filtered = [];
       this._clearFilters();
       this._clearSort();
 
-      this.getTableData(function (data) {
-        var
-          cellVal,
-          mappedItem;
-
-        data.forEach(function (item, itemIndex) {
-          mappedItem = {};
-          self._columns.forEach(function (column) {
-            if (column.property) {
-              cellVal = Utils.getObjectProperty(item, column.property);
-              mappedItem[column.property] = cellVal;
-              mappedItem.__rowId = itemIndex;
-            }
-          });
-          self._dataset.push(mappedItem);
+      this.getTableData(function (data, index) {
+        //create rows
+        data.forEach(function (item) {
+          rows.push(new Row(item, index));
         });
-        self._filtered = self._dataset;
+
         self._render();
       });
     },
 
     filter: function () {
-      var
-        self = this,
-        checked;
+      var rows = this._rows,
+          columns = this._columns,
+          rowValues,
+          rowElement,
+          checked;
 
-      this._filtered = [];
 
-      this._dataset.forEach(function (item) {
-        checked = self._columns.every(function (column) {
+      rows.forEach(function (row) {
+        rowValues = row.getValues();
+        rowElement = row.getElement();
+        checked = columns.every(function (column) {
           if (column.filter) {
-            return column.filter.check(item[column.property]);
+            return column.filter.check(rowValues[column.property]);
           }
           return true;
         });
         if (checked) {
-          self._filtered.push(item);
+          rowElement.classList.remove(SmartTable.CSS.HIDDEN);
+        } else {
+          rowElement.classList.add(SmartTable.CSS.HIDDEN);
         }
       });
-
-      this._render();
     },
 
     sort: function (column, order) {
-      var
-        self = this,
-        sortResult = 1;
+      var rows = this._rows,
+          sortResult = 1;
 
       if (!order) {
         order = CSS.COLUMN_SORT_ASC;
@@ -480,22 +412,24 @@
         sortResult = -1;
       }
 
-      self._filtered.sort(function (a, b) {
-        if (a[column.property] >= b[column.property]) {
+      rows.sort(function (a, b) {
+        var valuesA = a.getValues(),
+            valuesB = b.getValues();
+
+        if (valuesA[column.property] >= valuesB[column.property]) {
           return sortResult;
         }
-        if (a[column.property] < b[column.property]) {
+        if (valuesA[column.property] < valuesB[column.property]) {
           return -1 * sortResult;
         }
       });
 
-      self._render();
+      this._render();
     },
 
     toggleColumns: function (colIndexes) {
-      var
-        self = this,
-        column;
+      var self = this,
+          column;
 
       if (!Array.isArray(colIndexes)) {
         colIndexes = [colIndexes];
@@ -504,16 +438,16 @@
       colIndexes.forEach(function (colIndex) {
         column = self._columns[colIndex - 1];
         if (column) {
-          if (typeof column.hidden === 'undefined' ||
-            column.hidden === false) {
-            column.hidden = true;
+          if (typeof column.isHidden === 'undefined' ||
+            column.isHidden === false) {
+            column.isHidden = true;
           } else {
-            column.hidden = false;
+            column.isHidden = false;
           }
         }
       });
 
-      this._render();
+      this._setColumns();
     },
 
     toggleFilters: function () {
